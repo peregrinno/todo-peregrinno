@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge"
 import { Settings, ListTodo } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import packageInfo from '../package.json';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -12,7 +14,7 @@ export function Navigation() {
   return (
     <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Todo Peregrinno</h1>
+        <h1 className="text-3xl font-bold tracking-tight">ToDo Peregrinno <Badge variant="outline">v{packageInfo.version}</Badge></h1>
         <p className="text-muted-foreground mt-1">
           Gerencie suas tarefas de forma simples e eficiente
         </p>

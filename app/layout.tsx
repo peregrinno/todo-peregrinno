@@ -13,8 +13,11 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Todo Peregrinno",
+  title: "ToDo Peregrinno",
   description: "Gerenciador de tarefas com armazenamento local",
+  appleWebApp: {
+    title: "ToDo Peregrinno"
+  }
 };
 
 export default function RootLayout({

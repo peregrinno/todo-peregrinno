@@ -51,7 +51,7 @@ export default function SettingsPage() {
     if (editingCategory && editCategoryName.trim()) {
       updateCategory(editingCategory.id, {
         name: editCategoryName.trim(),
-        value: editingCategory.value, // Mantém o mesmo value para não quebrar referências
+        value: editingCategory.value, 
         color: editCategoryColor
       });
       
@@ -61,8 +61,8 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="container py-6 space-y-6">
-      <div className="flex items-center space-x-2">
+    <>
+      <div className="flex items-center space-x-2 mb-4">
         <Settings className="h-6 w-6" />
         <h1 className="text-2xl font-bold">Configurações</h1>
       </div>
@@ -79,7 +79,7 @@ export default function SettingsPage() {
           <div className="flex flex-col space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
               <div className="md:col-span-5">
-                <Label htmlFor="categoryName">Nome da categoria</Label>
+                <Label htmlFor="categoryName" className="mb-2">Nome da categoria</Label>
                 <Input
                   id="categoryName"
                   value={newCategoryName}
@@ -88,7 +88,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="md:col-span-5">
-                <Label>Cor</Label>
+                <Label htmlFor="categoryColor" className="mb-2">Cor</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button 
@@ -218,7 +218,7 @@ export default function SettingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
 
