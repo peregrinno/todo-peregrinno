@@ -9,12 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TaskCategory, TaskStatus } from "@/types";
+import { TaskStatus } from "@/types";
 import { useTaskContext } from "@/context/task-context";
+import { useCategoryContext } from "@/context/category-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -25,7 +27,7 @@ const formSchema = z.object({
   description: z.string().min(5, {
     message: "A descrição deve ter pelo menos 5 caracteres.",
   }),
-  category: z.enum(["trabalho", "pessoal", "estudos", "saude", "financas", "outros"] as const),
+  category: z.string(),
   status: z.enum(["pendente", "em_andamento", "concluida"] as const),
   dueDate: z.date({
     required_error: "Por favor selecione uma data de entrega.",
@@ -37,6 +39,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function TaskForm({ onSuccess }: { onSuccess?: () => void }) {
   const [open, setOpen] = useState(false);
   const { addTask } = useTaskContext();
+  const { customCategories } = useCategoryContext();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -52,7 +55,7 @@ export function TaskForm({ onSuccess }: { onSuccess?: () => void }) {
     addTask({
       title: values.title,
       description: values.description,
-      category: values.category as TaskCategory,
+      category: values.category,
       status: values.status as TaskStatus,
       dueDate: values.dueDate.toISOString(),
     });
@@ -119,6 +122,17 @@ export function TaskForm({ onSuccess }: { onSuccess?: () => void }) {
                         <SelectItem value="saude">Saúde</SelectItem>
                         <SelectItem value="financas">Finanças</SelectItem>
                         <SelectItem value="outros">Outros</SelectItem>
+                        
+                        {customCategories.length > 0 && (
+                          <>
+                            <div className="h-px bg-muted my-1" />
+                            {customCategories.map((category) => (
+                              <SelectItem key={category.id} value={category.value}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -165,7 +179,7 @@ export function TaskForm({ onSuccess }: { onSuccess?: () => void }) {
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP")
+                            format(field.value, "PPP", { locale: ptBR })
                           ) : (
                             <span>Selecione uma data</span>
                           )}
