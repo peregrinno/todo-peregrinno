@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { Task } from "@/types";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTaskContext } from "@/context/task-context";
+import { useCategoryContext } from "@/context/category-context";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -42,6 +43,7 @@ interface TaskCardProps {
 
 export function TaskCard({ task, isKanban = false }: TaskCardProps) {
   const { updateTask, deleteTask } = useTaskContext();
+  const { customCategories } = useCategoryContext();
   const [editModalOpen, setEditModalOpen] = useState(false);
   
   // Substituindo useSortable por useDraggable para simplificar
@@ -93,6 +95,49 @@ export function TaskCard({ task, isKanban = false }: TaskCardProps) {
     setEditModalOpen(true);
   };
 
+  // Função para obter a cor da categoria personalizada ou usar a cor padrão
+  const getCategoryColor = () => {
+    // Verificar se é uma categoria personalizada
+    const customCategory = customCategories.find(cat => cat.value === task.category);
+    
+    if (customCategory) {
+      // Se for uma categoria personalizada, retornar um objeto de estilo com a cor personalizada
+      return {
+        style: {
+          backgroundColor: customCategory.color,
+          color: getContrastColor(customCategory.color)
+        },
+        className: ''
+      };
+    } else {
+      // Se for uma categoria padrão, usar as classes CSS predefinidas
+      return {
+        style: {},
+        className: categoryColors[task.category] || categoryColors.outros
+      };
+    }
+  };
+
+  // Função helper para calcular cor de texto contrastante (preta ou branca)
+  const getContrastColor = (hexColor: string): string => {
+    // Remover o # se existir
+    const hex = hexColor.replace('#', '');
+    
+    // Converter para RGB
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    // Calcular luminância
+    // Fórmula padrão para calcular brilho percebido
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Retornar preto para cores claras, branco para cores escuras
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+  };
+
+  const categoryColorInfo = getCategoryColor();
+
   return (
     <>
       <Card 
@@ -101,7 +146,7 @@ export function TaskCard({ task, isKanban = false }: TaskCardProps) {
         {...(isKanban ? attributes : {})}
         {...(isKanban ? listeners : {})}
         className={cn(
-          "transition-all hover:shadow-md", 
+          "transition-all hover:shadow-md cursor-pointer", 
           isPastDue() && "border-red-300 dark:border-red-700",
           isKanban && "cursor-grab active:cursor-grabbing"
         )}
@@ -140,8 +185,12 @@ export function TaskCard({ task, isKanban = false }: TaskCardProps) {
             </DropdownMenu>
           </div>
           <CardDescription className="flex flex-wrap gap-2 pt-1">
-            <Badge variant="secondary" className={categoryColors[task.category]}>
-              {task.category.charAt(0).toUpperCase() + task.category.slice(1)}
+            <Badge 
+              variant="secondary" 
+              className={categoryColorInfo.className}
+              style={categoryColorInfo.style}
+            >
+              {task.category.charAt(0).toUpperCase() + task.category.slice(1).replace('_', ' ')}
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
               {statusIcons[task.status]}
@@ -149,21 +198,21 @@ export function TaskCard({ task, isKanban = false }: TaskCardProps) {
             </Badge>
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <p className="text-sm">{task.description}</p>
-        </CardContent>
-        <CardFooter className="text-xs text-muted-foreground pt-0 flex flex-col items-start">
-          <p className={cn(isPastDue() && "text-red-500")}>
-            Prazo: {formatDate(task.dueDate)}
+          <p className="text-xs text-muted-foreground mt-2">
+            Data de entrega: {formatDate(task.dueDate)}
+            {isPastDue() && (
+              <span className="text-red-500 ml-2 font-medium">Atrasada</span>
+            )}
           </p>
-          <p>Criado em: {formatDate(task.createdAt)}</p>
-        </CardFooter>
+        </CardContent>
       </Card>
-      
+
       <TaskEditForm 
-        taskId={task.id} 
-        open={editModalOpen} 
-        onOpenChange={setEditModalOpen} 
+        taskId={task.id}
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
       />
     </>
   );

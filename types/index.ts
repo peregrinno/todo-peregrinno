@@ -6,7 +6,8 @@ export type TaskCategory =
   | "estudos" 
   | "saude" 
   | "financas" 
-  | "outros";
+  | "outros"
+  | string;
 
 export interface Task {
   id: string;

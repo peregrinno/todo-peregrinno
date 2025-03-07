@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TaskCategory, TaskStatus } from "@/types";
+import { TaskStatus } from "@/types";
 import { useTaskContext } from "@/context/task-context";
+import { useCategoryContext } from "@/context/category-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
@@ -26,7 +27,7 @@ const formSchema = z.object({
   description: z.string().min(5, {
     message: "A descrição deve ter pelo menos 5 caracteres.",
   }),
-  category: z.enum(["trabalho", "pessoal", "estudos", "saude", "financas", "outros"] as const),
+  category: z.string(), 
   status: z.enum(["pendente", "em_andamento", "concluida"] as const),
   dueDate: z.date({
     required_error: "Por favor selecione uma data de entrega.",
@@ -43,6 +44,7 @@ interface TaskEditFormProps {
 
 export function TaskEditForm({ taskId, open, onOpenChange }: TaskEditFormProps) {
   const { getTaskById, updateTask } = useTaskContext();
+  const { customCategories } = useCategoryContext();
   const task = getTaskById(taskId);
 
   const form = useForm<FormValues>({
@@ -56,7 +58,6 @@ export function TaskEditForm({ taskId, open, onOpenChange }: TaskEditFormProps) 
     },
   });
 
-  // Atualiza o formulário quando o task mudar
   useEffect(() => {
     if (task) {
       form.reset({
@@ -74,7 +75,7 @@ export function TaskEditForm({ taskId, open, onOpenChange }: TaskEditFormProps) 
       updateTask(task.id, {
         title: values.title,
         description: values.description,
-        category: values.category as TaskCategory,
+        category: values.category,
         status: values.status as TaskStatus,
         dueDate: values.dueDate.toISOString(),
       });
@@ -138,6 +139,17 @@ export function TaskEditForm({ taskId, open, onOpenChange }: TaskEditFormProps) 
                         <SelectItem value="saude">Saúde</SelectItem>
                         <SelectItem value="financas">Finanças</SelectItem>
                         <SelectItem value="outros">Outros</SelectItem>
+                        
+                        {customCategories.length > 0 && (
+                          <>
+                            <div className="h-px bg-muted my-1" />
+                            {customCategories.map((category) => (
+                              <SelectItem key={category.id} value={category.value}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -205,16 +217,7 @@ export function TaskEditForm({ taskId, open, onOpenChange }: TaskEditFormProps) 
                 </FormItem>
               )}
             />
-            <div className="flex gap-2 justify-end">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit">Salvar</Button>
-            </div>
+            <Button type="submit" className="w-full">Salvar</Button>
           </form>
         </Form>
       </DialogContent>

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { Task, TaskCategory, TaskStatus } from "@/types";
+import { Task } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 
 interface TaskContextType {
